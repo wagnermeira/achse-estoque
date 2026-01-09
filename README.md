@@ -1,73 +1,49 @@
-# React + TypeScript + Vite
+# ACHSE - Sistema de Controle de Estoque (Facilities)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sistema Full-Stack desenvolvido para gestão de materiais e ativos de manutenção. O foco do projeto é a **visualização rápida** (Catálogo Digital) e a acessibilidade para equipes de campo via **Mobile**.
 
-Currently, two official plugins are available:
+## 🚀 Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Dashboard Visual:** Tabela com fotos grandes (150px) para fácil identificação de peças.
+- **Responsividade Mobile:** A tabela se transforma em "Cards" automáticos ao abrir no celular.
+- **Busca Inteligente:** Filtros cumulativos (Código + Descrição + Categoria) que ignoram acentos.
+- **CRUD Completo:** Criar, Listar, Editar e Excluir materiais (Com Upload de Fotos).
+- **Importação em Massa:** Script para ler planilha Excel (`materiais.xlsx`) e alimentar o banco.
+- **Controle de Acesso:**
+  - **Master:** Acesso total (Cadastrar/Editar/Excluir).
+  - **Manutenção:** Apenas consulta e visualização.
 
-## React Compiler
+## 🛠 Tecnologias Utilizadas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
+- **React + Vite:** Para uma interface ultra-rápida.
+- **TypeScript:** Para segurança e organização do código.
+- **CSS Modules:** Estilização modular e organizada.
+- **React Router:** Navegação entre telas.
 
-## Expanding the ESLint configuration
+### Backend
+- **Node.js + Express:** API REST.
+- **SQLite:** Banco de dados leve e eficiente (arquivo local).
+- **Prisma ORM:** Gerenciamento do banco de dados.
+- **Multer:** Gerenciamento de upload de imagens.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## ⚙️ Como Rodar o Projeto
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 1. Backend (Servidor)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Abra um terminal na pasta `backend`:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+```bash
+cd backend
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+# Instalar dependências
+npm install
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+# Configurar o Banco de Dados
+npx prisma generate
+npx prisma migrate dev --name init
+
+# Rodar o servidor (Porta 3333)
+npm run dev

@@ -1,0 +1,138 @@
+/* frontend/src/components/NewMaterialModal.module.css */
+
+/* Fundo escuro transparente */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px); /* Efeito de vidro */
+}
+
+/* A Janela do Modal */
+.modal {
+  background: white;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideIn 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Cabeçalho do Modal */
+.header {
+  background-color: #0A1E2F;
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Corpo do Formulário */
+.form {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1F4F6B;
+  text-transform: uppercase;
+}
+
+.input, .select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-family: 'Poppins', sans-serif;
+  text-transform: uppercase; /* Força visualmente maiúsculo */
+}
+
+.fileInput {
+  border: 1px dashed #ccc;
+  padding: 10px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+/* Rodapé com Botões */
+.footer {
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #eee;
+}
+
+.btnCancel {
+  background: white;
+  border: 1px solid #ddd;
+  color: #666;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnSave {
+  background-color: #102E45;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnSave:hover {
+  background-color: #0A1E2F;
+}
+
+.btnSave:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

@@ -1,0 +1,21 @@
+// backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Material {
+  id        Int      @id @default(autoincrement())
+  codigo    String   @unique
+  descricao String
+  categoria String
+  fotoUrl   String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
