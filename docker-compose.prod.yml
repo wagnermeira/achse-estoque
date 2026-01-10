@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # O CÉREBRO
+  achse-backend:
+    container_name: achse-backend
+    build: ./backend
+    restart: always
+    volumes:
+      - ./backend/prisma/dev.db:/app/prisma/dev.db # Salva o banco na VPS
+      - achse_uploads:/app/uploads # Salva as fotos
+    networks:
+      - achse_network
+
+  # A CARA (INTERFACE)
+  achse-frontend:
+    container_name: achse-frontend
+    build: ./frontend
+    restart: always
+    depends_on:
+      - achse-backend
+    networks:
+      - achse_network
+      - web_proxy_network # Conecta no seu Nginx Gateway principal
+
+volumes:
+  achse_uploads: {}
+
+networks:
+  achse_network:
+    driver: bridge
+  web_proxy_network:
+    external: true

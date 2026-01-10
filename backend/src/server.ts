@@ -34,8 +34,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Servir as imagens estáticas (para o Frontend conseguir ver)
-// Ex: http://localhost:3333/uploads/nome-da-foto.jpg
+// Servir as imagens estáticas
 app.use('/uploads', express.static(uploadDir));
 
 // --- ROTAS (ENDPOINTS) ---
@@ -44,7 +43,7 @@ app.use('/uploads', express.static(uploadDir));
 app.get('/materiais', async (req, res) => {
   try {
     const materiais = await prisma.material.findMany({
-      orderBy: { createdAt: 'desc' } // Os mais novos aparecem primeiro
+      orderBy: { createdAt: 'desc' }
     });
     res.json(materiais);
   } catch (error) {
@@ -58,10 +57,17 @@ app.post('/materiais', upload.single('foto'), async (req, res) => {
     const { codigo, descricao, categoria } = req.body;
     const file = req.file;
 
-    // Constrói a URL da foto se ela foi enviada
     let fotoUrl = null;
     if (file) {
-      fotoUrl = `http://localhost:3333/uploads/${file.filename}`;
+      // --- CONFIGURAÇÃO DE URL DA FOTO ---
+      
+      // OPÇÃO A: MODO LOCAL (PC)
+      // Se estiver rodando no VSCode, descomente a linha abaixo:
+      // fotoUrl = `http://localhost:3333/uploads/${file.filename}`;
+
+      // OPÇÃO B: MODO VPS/PRODUÇÃO (ATUAL)
+      // Usa caminho relativo. O navegador/Nginx se vira para completar o domínio.
+      fotoUrl = `/uploads/${file.filename}`;
     }
 
     const novoMaterial = await prisma.material.create({
@@ -87,17 +93,20 @@ app.put('/materiais/:id', upload.single('foto'), async (req, res) => {
     const { codigo, descricao, categoria } = req.body;
     const file = req.file;
 
-    // Prepara os dados para atualizar
-    // Usamos 'any' aqui para facilitar a montagem dinâmica do objeto
     let dadosAtualizados: any = { 
       codigo, 
       descricao, 
       categoria 
     };
 
-    // Só atualiza a foto se o usuário mandou uma nova
     if (file) {
-      dadosAtualizados.fotoUrl = `http://localhost:3333/uploads/${file.filename}`;
+      // --- CONFIGURAÇÃO DE URL DA FOTO ---
+
+      // OPÇÃO A: MODO LOCAL (PC)
+      // fotoUrl = `http://localhost:3333/uploads/${file.filename}`;
+
+      // OPÇÃO B: MODO VPS/PRODUÇÃO (ATUAL)
+      dadosAtualizados.fotoUrl = `/uploads/${file.filename}`;
     }
 
     const materialAtualizado = await prisma.material.update({
@@ -116,11 +125,9 @@ app.put('/materiais/:id', upload.single('foto'), async (req, res) => {
 app.delete('/materiais/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
     await prisma.material.delete({
       where: { id: Number(id) }
     });
-    
     res.json({ message: 'Material deletado com sucesso' });
   } catch (error) {
     console.error(error);
