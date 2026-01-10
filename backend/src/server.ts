@@ -61,12 +61,12 @@ app.post('/materiais', upload.single('foto'), async (req, res) => {
     if (file) {
       // --- CONFIGURAÇÃO DE URL DA FOTO ---
       
-      // OPÇÃO A: MODO LOCAL (PC)
-      // Se estiver rodando no VSCode, descomente a linha abaixo:
+      // OPÇÃO A: MODO LOCAL (Hardcoded)
+      // Se precisar testar sem variáveis de ambiente no frontend, descomente a linha abaixo:
       // fotoUrl = `http://localhost:3333/uploads/${file.filename}`;
 
-      // OPÇÃO B: MODO VPS/PRODUÇÃO (ATUAL)
-      // Usa caminho relativo. O navegador/Nginx se vira para completar o domínio.
+      // OPÇÃO B: MODO PROFISSIONAL (Relativo) - ATIVO
+      // Salva apenas o caminho. O Frontend decide qual domínio usar (localhost ou vps) via .env
       fotoUrl = `/uploads/${file.filename}`;
     }
 
@@ -102,10 +102,10 @@ app.put('/materiais/:id', upload.single('foto'), async (req, res) => {
     if (file) {
       // --- CONFIGURAÇÃO DE URL DA FOTO ---
 
-      // OPÇÃO A: MODO LOCAL (PC)
+      // OPÇÃO A: MODO LOCAL (Hardcoded)
       // fotoUrl = `http://localhost:3333/uploads/${file.filename}`;
 
-      // OPÇÃO B: MODO VPS/PRODUÇÃO (ATUAL)
+      // OPÇÃO B: MODO PROFISSIONAL (Relativo) - ATIVO
       dadosAtualizados.fotoUrl = `/uploads/${file.filename}`;
     }
 

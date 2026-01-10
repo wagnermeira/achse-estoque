@@ -23,31 +23,36 @@ interface NewMaterialModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  materialToEdit?: Material | null; // Novo: Recebe o material para editar
+  materialToEdit?: Material | null;
 }
 
 export function NewMaterialModal({ isOpen, onClose, onSuccess, materialToEdit }: NewMaterialModalProps) {
+  // --- CONFIGURAÇÃO DE AMBIENTE (ENV) ---
+  // Local: http://localhost:3333
+  // VPS: Vazio (caminho relativo)
+  const API_URL = import.meta.env.VITE_API_URL || '';
+
   const [codigo, setCodigo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [categoria, setCategoria] = useState('');
   const [foto, setFoto] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Efeito Mágico: Quando o modal abre, verifica se é Edição ou Criação
+  // Efeito: Preenche os campos quando abre o modal
   useEffect(() => {
     if (isOpen) {
       if (materialToEdit) {
-        // Modo Edição: Preenche os campos
+        // Modo Edição
         setCodigo(materialToEdit.codigo);
         setDescricao(materialToEdit.descricao);
         setCategoria(materialToEdit.categoria);
       } else {
-        // Modo Criação: Limpa os campos
+        // Modo Criação
         setCodigo('');
         setDescricao('');
         setCategoria('');
       }
-      setFoto(null); // Foto sempre começa vazia (só muda se o user selecionar nova)
+      setFoto(null);
     }
   }, [isOpen, materialToEdit]);
 
@@ -66,12 +71,12 @@ export function NewMaterialModal({ isOpen, onClose, onSuccess, materialToEdit }:
         formData.append('foto', foto);
       }
 
-      let url = 'http://localhost:3333/materiais';
+      // --- DEFINIÇÃO DA URL DINÂMICA ---
+      let url = `${API_URL}/materiais`;
       let method = 'POST';
 
-      // Se tiver ID, muda para EDIÇÃO (PUT)
       if (materialToEdit) {
-        url = `http://localhost:3333/materiais/${materialToEdit.id}`;
+        url = `${API_URL}/materiais/${materialToEdit.id}`;
         method = 'PUT';
       }
 
@@ -85,11 +90,11 @@ export function NewMaterialModal({ isOpen, onClose, onSuccess, materialToEdit }:
         onSuccess();
         onClose();
       } else {
-        alert('Erro ao salvar.');
+        alert('Erro ao salvar. Verifique se o código já existe.');
       }
     } catch (error) {
       console.error(error);
-      alert('Erro de conexão.');
+      alert('Erro de conexão com o servidor.');
     } finally {
       setIsLoading(false);
     }
@@ -111,6 +116,7 @@ export function NewMaterialModal({ isOpen, onClose, onSuccess, materialToEdit }:
             <input 
               required
               className={styles.input}
+              placeholder="EX: ELE-001"
               value={codigo}
               onChange={e => setCodigo(e.target.value)}
             />
@@ -121,6 +127,7 @@ export function NewMaterialModal({ isOpen, onClose, onSuccess, materialToEdit }:
             <input 
               required
               className={styles.input}
+              placeholder="EX: DISJUNTOR..."
               value={descricao}
               onChange={e => setDescricao(e.target.value)}
             />

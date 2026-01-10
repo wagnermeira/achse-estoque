@@ -17,10 +17,13 @@ interface Material {
 export function Dashboard() {
   const { user, logout } = useAuth();
   
+  // --- CONFIGURAÇÃO DE AMBIENTE (ENV) ---
+  // Se estiver no PC, usa http://localhost:3333
+  // Se estiver na VPS, usa vazio (caminho relativo)
+  const API_URL = import.meta.env.VITE_API_URL || '';
+
   const [materials, setMaterials] = useState<Material[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // Estado para guardar qual material está sendo editado (ou null se for novo)
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
 
   // Filtros
@@ -28,13 +31,14 @@ export function Dashboard() {
   const [filterDesc, setFilterDesc] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
 
+  // --- BUSCAR MATERIAIS ---
   async function loadMaterials() {
     try {
-      const response = await fetch('http://localhost:3333/materiais');
+      const response = await fetch(`${API_URL}/materiais`);
       const data = await response.json();
       setMaterials(data);
     } catch (error) {
-      console.error("Erro ao carregar", error);
+      console.error("Erro ao carregar materiais", error);
     }
   }
 
@@ -42,35 +46,41 @@ export function Dashboard() {
     loadMaterials();
   }, []);
 
-  // --- FUNÇÃO DE EXCLUIR ---
+  // --- EXCLUIR ---
   async function handleDelete(id: number) {
     if (confirm('Tem certeza que deseja excluir este material?')) {
       try {
-        await fetch(`http://localhost:3333/materiais/${id}`, { method: 'DELETE' });
-        loadMaterials(); // Recarrega a lista
+        await fetch(`${API_URL}/materiais/${id}`, { method: 'DELETE' });
+        loadMaterials();
       } catch (error) {
         alert('Erro ao excluir');
       }
     }
   }
 
-  // --- FUNÇÃO DE ABRIR MODAL PARA EDITAR ---
+  // --- FUNÇÕES AUXILIARES ---
   function handleEdit(material: Material) {
-    setEditingMaterial(material); // Guarda quem vamos editar
-    setIsModalOpen(true);         // Abre a janela
+    setEditingMaterial(material);
+    setIsModalOpen(true);
   }
 
-  // --- FUNÇÃO DE ABRIR MODAL PARA NOVO ---
   function handleNew() {
-    setEditingMaterial(null); // Limpa (é um novo)
-    setIsModalOpen(true);     // Abre a janela
+    setEditingMaterial(null);
+    setIsModalOpen(true);
   }
 
-  // Lógica de Filtro
+  // Resolve a URL da imagem (se for relativo, adiciona o domínio da API)
+  const getImageUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url; // Se já for completa (legado), mantém
+    return `${API_URL}${url}`; // Monta: http://localhost:3333/uploads/foto.jpg
+  };
+
   const normalizeText = (text: string) => {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
   };
 
+  // --- FILTROS ---
   const filteredMaterials = materials.filter((item) => {
     const codeMatch = normalizeText(item.codigo).includes(normalizeText(filterCode));
     const descMatch = normalizeText(item.descricao).includes(normalizeText(filterDesc));
@@ -84,7 +94,7 @@ export function Dashboard() {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         onSuccess={loadMaterials}
-        materialToEdit={editingMaterial} // Passa o material (se houver)
+        materialToEdit={editingMaterial}
       />
 
       <header className={styles.header}>
@@ -144,7 +154,7 @@ export function Dashboard() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th style={{ width: '80px' }}>Foto</th>
+                <th style={{ width: '180px' }}>Foto</th>
                 <th style={{ width: '150px' }}>Código</th>
                 <th>Descrição do Material</th>
                 <th style={{ width: '180px' }}>Categoria</th>
@@ -156,7 +166,11 @@ export function Dashboard() {
                 <tr key={material.id}>
                   <td>
                     {material.fotoUrl ? (
-                      <img src={material.fotoUrl} alt="Foto" className={styles.thumbImg} />
+                      <img 
+                        src={getImageUrl(material.fotoUrl)} 
+                        alt="Foto" 
+                        className={styles.thumbImg} 
+                      />
                     ) : (
                       <div className={styles.noPhoto}>SEM FOTO</div>
                     )}
@@ -165,7 +179,6 @@ export function Dashboard() {
                   <td>{material.descricao}</td>
                   <td>{material.categoria}</td>
                   
-                  {/* BOTÕES DE AÇÃO LIGADOS AGORA */}
                   {user === 'master' && (
                     <td style={{ textAlign: 'center' }}>
                       <button 
