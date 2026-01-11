@@ -14,8 +14,29 @@ const prisma = new PrismaClient();
 app.use(cors()); // Permite que o Frontend acesse o Backend
 app.use(express.json());
 
+// --- SEGURANÇA (MIDDLEWARE) ---
+app.use((req, res, next) => {
+  // 1. Libera o acesso às fotos (senão as imagens somem do site)
+  // O navegador precisa baixar as fotos sem enviar senha
+  if (req.path.startsWith('/uploads')) {
+    return next();
+  }
+
+  // 2. Verifica a Chave de Segurança
+  const apiKey = req.headers['x-api-key'];
+  
+  // Essa é a senha interna entre o Site e a API.
+  // Se alguém tentar acessar a API sem isso, é bloqueado.
+  const SENHA_MESTRA = 'achse-segredo-supremo-2026';
+
+  if (apiKey !== SENHA_MESTRA) {
+    return res.status(401).json({ error: 'Acesso Negado: Você não tem a chave da API.' });
+  }
+
+  next(); // Se a senha bater, deixa passar para as rotas abaixo.
+});
+
 // --- CONFIGURAÇÃO DE UPLOAD (MULTER) ---
-// As fotos ficarão salvas na pasta 'uploads' dentro do backend
 const uploadDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
@@ -59,14 +80,7 @@ app.post('/materiais', upload.single('foto'), async (req, res) => {
 
     let fotoUrl = null;
     if (file) {
-      // --- CONFIGURAÇÃO DE URL DA FOTO ---
-      
-      // OPÇÃO A: MODO LOCAL (Hardcoded)
-      // Se precisar testar sem variáveis de ambiente no frontend, descomente a linha abaixo:
-      // fotoUrl = `http://localhost:3333/uploads/${file.filename}`;
-
-      // OPÇÃO B: MODO PROFISSIONAL (Relativo) - ATIVO
-      // Salva apenas o caminho. O Frontend decide qual domínio usar (localhost ou vps) via .env
+      // Salva apenas o caminho relativo
       fotoUrl = `/uploads/${file.filename}`;
     }
 
@@ -93,19 +107,13 @@ app.put('/materiais/:id', upload.single('foto'), async (req, res) => {
     const { codigo, descricao, categoria } = req.body;
     const file = req.file;
 
-    let dadosAtualizados: any = { 
-      codigo, 
-      descricao, 
-      categoria 
+    let dadosAtualizados: any = {
+      codigo,
+      descricao,
+      categoria
     };
 
     if (file) {
-      // --- CONFIGURAÇÃO DE URL DA FOTO ---
-
-      // OPÇÃO A: MODO LOCAL (Hardcoded)
-      // fotoUrl = `http://localhost:3333/uploads/${file.filename}`;
-
-      // OPÇÃO B: MODO PROFISSIONAL (Relativo) - ATIVO
       dadosAtualizados.fotoUrl = `/uploads/${file.filename}`;
     }
 
@@ -125,6 +133,19 @@ app.put('/materiais/:id', upload.single('foto'), async (req, res) => {
 app.delete('/materiais/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const material = await prisma.material.findUnique({
+      where: { id: Number(id) }
+    });
+
+    // Tenta apagar a foto física se existir
+    if (material?.fotoUrl) {
+      const nomeArquivo = material.fotoUrl.replace('/uploads/', '');
+      const caminhoFoto = path.join(uploadDir, nomeArquivo);
+      if (fs.existsSync(caminhoFoto)) {
+        fs.unlinkSync(caminhoFoto);
+      }
+    }
+
     await prisma.material.delete({
       where: { id: Number(id) }
     });

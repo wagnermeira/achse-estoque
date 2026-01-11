@@ -16,10 +16,8 @@ interface Material {
 
 export function Dashboard() {
   const { user, logout } = useAuth();
-  
+
   // --- CONFIGURAÇÃO DE AMBIENTE (ENV) ---
-  // Se estiver no PC, usa http://localhost:3333
-  // Se estiver na VPS, usa vazio (caminho relativo)
   const API_URL = import.meta.env.VITE_API_URL || '';
 
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -31,10 +29,21 @@ export function Dashboard() {
   const [filterDesc, setFilterDesc] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
 
-  // --- BUSCAR MATERIAIS ---
+  // --- BUSCAR MATERIAIS (COM SEGURANÇA) ---
   async function loadMaterials() {
     try {
-      const response = await fetch(`${API_URL}/materiais`);
+      const response = await fetch(`${API_URL}/materiais`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': 'achse-segredo-supremo-2026' // <--- A CHAVE AQUI
+        }
+      });
+      
+      if (response.status === 401) {
+        alert('Erro de Segurança: Acesso não autorizado.');
+        return;
+      }
+
       const data = await response.json();
       setMaterials(data);
     } catch (error) {
@@ -46,11 +55,16 @@ export function Dashboard() {
     loadMaterials();
   }, []);
 
-  // --- EXCLUIR ---
+  // --- EXCLUIR (COM SEGURANÇA) ---
   async function handleDelete(id: number) {
     if (confirm('Tem certeza que deseja excluir este material?')) {
       try {
-        await fetch(`${API_URL}/materiais/${id}`, { method: 'DELETE' });
+        await fetch(`${API_URL}/materiais/${id}`, { 
+          method: 'DELETE',
+          headers: {
+            'x-api-key': 'achse-segredo-supremo-2026' // <--- A CHAVE AQUI
+          }
+        });
         loadMaterials();
       } catch (error) {
         alert('Erro ao excluir');
@@ -90,8 +104,8 @@ export function Dashboard() {
 
   return (
     <div className={styles.container}>
-      <NewMaterialModal 
-        isOpen={isModalOpen} 
+      <NewMaterialModal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={loadMaterials}
         materialToEdit={editingMaterial}
@@ -113,9 +127,9 @@ export function Dashboard() {
           <div className={styles.filtersContainer}>
             <div className={styles.filterGroup}>
               <label className={styles.filterLabel}>Filtrar por Código</label>
-              <input 
-                type="text" 
-                placeholder="Ex: ELE-001" 
+              <input
+                type="text"
+                placeholder="Ex: ELE-001"
                 className={styles.filterInput}
                 value={filterCode}
                 onChange={(e) => setFilterCode(e.target.value)}
@@ -123,9 +137,9 @@ export function Dashboard() {
             </div>
             <div className={styles.filterGroup}>
               <label className={styles.filterLabel}>Filtrar por Descrição</label>
-              <input 
-                type="text" 
-                placeholder="Ex: Disjuntor" 
+              <input
+                type="text"
+                placeholder="Ex: Disjuntor"
                 className={styles.filterInput}
                 value={filterDesc}
                 onChange={(e) => setFilterDesc(e.target.value)}
@@ -133,9 +147,9 @@ export function Dashboard() {
             </div>
             <div className={styles.filterGroup}>
               <label className={styles.filterLabel}>Filtrar por Categoria</label>
-              <input 
-                type="text" 
-                placeholder="Ex: Elétrica" 
+              <input
+                type="text"
+                placeholder="Ex: Elétrica"
                 className={styles.filterInput}
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
@@ -166,10 +180,10 @@ export function Dashboard() {
                 <tr key={material.id}>
                   <td>
                     {material.fotoUrl ? (
-                      <img 
-                        src={getImageUrl(material.fotoUrl)} 
-                        alt="Foto" 
-                        className={styles.thumbImg} 
+                      <img
+                        src={getImageUrl(material.fotoUrl)}
+                        alt="Foto"
+                        className={styles.thumbImg}
                       />
                     ) : (
                       <div className={styles.noPhoto}>SEM FOTO</div>
@@ -178,18 +192,18 @@ export function Dashboard() {
                   <td><span className={styles.codeCell}>{material.codigo}</span></td>
                   <td>{material.descricao}</td>
                   <td>{material.categoria}</td>
-                  
+
                   {user === 'master' && (
                     <td style={{ textAlign: 'center' }}>
-                      <button 
-                        className={`${styles.actionBtn} ${styles.editBtn}`} 
+                      <button
+                        className={`${styles.actionBtn} ${styles.editBtn}`}
                         title="Editar"
                         onClick={() => handleEdit(material)}
                       >
                         ✏️
                       </button>
-                      <button 
-                        className={`${styles.actionBtn} ${styles.deleteBtn}`} 
+                      <button
+                        className={`${styles.actionBtn} ${styles.deleteBtn}`}
                         title="Excluir"
                         onClick={() => handleDelete(material.id)}
                       >
@@ -199,7 +213,7 @@ export function Dashboard() {
                   )}
                 </tr>
               ))}
-              
+
               {filteredMaterials.length === 0 && (
                 <tr>
                   <td colSpan={user === 'master' ? 5 : 4} style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
